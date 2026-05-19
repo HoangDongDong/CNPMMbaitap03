@@ -1,16 +1,25 @@
-const { Sequelize } = require("sequelize");
-require("dotenv").config();
+/**
+ * DATABASE CONFIGURATION
+ * Cau hinh ket noi MongoDB voi Mongoose
+ */
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME || "baitap03_db",
-  process.env.DB_USER || "root",
-  process.env.DB_PASSWORD || "",
-  {
-    host: process.env.DB_HOST || "localhost",
-    port: process.env.DB_PORT || 3306,
-    dialect: "mysql",
-    logging: false,
-  },
-);
+const mongoose = require("mongoose");
 
-module.exports = sequelize;
+const connectDatabase = async () => {
+  try {
+    const mongoURI =
+      process.env.MONGODB_URI || "mongodb://localhost:27017/forgot-password-db";
+
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log("MongoDB connected successfully!");
+  } catch (error) {
+    console.error("MongoDB connection error:", error.message);
+    process.exit(1);
+  }
+};
+
+module.exports = { connectDatabase };

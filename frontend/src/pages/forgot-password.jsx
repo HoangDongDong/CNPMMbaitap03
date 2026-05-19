@@ -1,63 +1,81 @@
-import { Form, Input, Button, Card, notification } from "antd";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import AuthShell from "../components/AuthShell";
+import PrimaryButton from "../components/PrimaryButton";
+import StatusMessage from "../components/StatusMessage";
+import TextInput from "../components/TextInput";
 import { forgotPasswordApi } from "../util/api";
-import "./forgot-password.css";
 
 const ForgotPassword = () => {
-  const [form] = Form.useForm();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState({ type: "", message: "" });
+  const navigate = useNavigate();
 
-  const onFinish = async (values) => {
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setStatus({ type: "", message: "" });
+
     try {
-      const { email } = values;
-      const result = await forgotPasswordApi(email);
-
-      notification.success({
-        message: "Success",
-        description:
-          result.message || "Password reset link has been sent to your email.",
-        duration: 3,
+      const targetEmail = email;
+      const result = await forgotPasswordApi(targetEmail);
+      setStatus({
+        type: "success",
+        message:
+          result.message || "OTP sent. Check your email for the reset code.",
       });
-
-      form.resetFields();
+      setEmail("");
+      if (targetEmail) {
+        navigate(`/reset-password?email=${encodeURIComponent(targetEmail)}`);
+      }
     } catch (error) {
-      notification.error({
-        message: "Error",
-        description:
-          error.message || "Failed to process forgot password request.",
-        duration: 3,
+      setStatus({
+        type: "error",
+        message: error.message || "Failed to request password reset.",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="forgot-password-container">
-      <Card className="forgot-password-card">
-        <h2>Forgot Password</h2>
-        <p>Enter your email address to receive a password reset link.</p>
-
-        <Form form={form} onFinish={onFinish} layout="vertical">
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[
-              { required: true, message: "Please input your email!" },
-              { type: "email", message: "Please enter a valid email!" },
-            ]}
+    <AuthShell
+      title="Forgot password"
+      subtitle="We will send an OTP to the email address below."
+      footer={
+        <p className="text-xs text-dusk/70">
+          Already have the OTP?{" "}
+          <Link
+            className="font-semibold text-sea"
+            to={
+              email
+                ? `/reset-password?email=${encodeURIComponent(email)}`
+                : "/reset-password"
+            }
           >
-            <Input placeholder="Enter your email address" />
-          </Form.Item>
-
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              Send Reset Link
-            </Button>
-          </Form.Item>
-        </Form>
-
-        <p>
-          Remember your password? <a href="/login">Login here</a>
+            Continue with reset password.
+          </Link>
         </p>
-      </Card>
-    </div>
+      }
+    >
+      <form className="space-y-5" onSubmit={onSubmit}>
+        <TextInput
+          label="Email address"
+          name="email"
+          type="email"
+          placeholder="you@example.com"
+          autoComplete="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          required
+        />
+        <StatusMessage type={status.type} message={status.message} />
+        <PrimaryButton type="submit" loading={loading}>
+          Send OTP
+        </PrimaryButton>
+      </form>
+    </AuthShell>
   );
 };
 

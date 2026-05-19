@@ -1,7 +1,7 @@
 {
   "name": "baitap03",
   "version": "1.0.0",
-  "description": "Express API with Sequelize and MySQL",
+  "description": "Forgot Password Feature with 3-tier Architecture",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -13,11 +13,12 @@
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
+    "mongoose": "^7.0.0",
     "bcrypt": "^5.1.0",
-    "jsonwebtoken": "^9.0.0",
-    "mysql2": "^3.2.0",
-    "sequelize": "^6.29.0"
+    "nodemailer": "^6.9.0",
+    "express-validator": "^7.0.0",
+    "express-rate-limit": "^6.7.0",
+    "dotenv": "^16.0.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

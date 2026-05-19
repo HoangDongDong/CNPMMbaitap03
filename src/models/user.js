@@ -1,40 +1,58 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+/**
+ * USER MODEL
+ * Schema nguoi dung cho chuc nang Forgot Password
+ */
 
-const User = sequelize.define(
-  "User",
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema(
   {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     email: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: [true, "Email is required"],
       unique: true,
+      lowercase: true,
+      trim: true,
+      match: [
+        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+        "Please enter a valid email address",
+      ],
     },
     password: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: [true, "Password is required"],
+      minlength: 6,
+      select: false,
     },
-    role: {
-      type: DataTypes.STRING,
-      defaultValue: "user",
+    fullName: {
+      type: String,
+      trim: true,
     },
-    resetPasswordToken: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    resetOtp: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    resetOtpExpires: {
+      type: Date,
+      default: null,
+      select: false,
     },
   },
   {
-    tableName: "users",
     timestamps: true,
   },
 );
+
+userSchema.index({ email: 1 });
+
+userSchema.virtual("isOtpValid").get(function () {
+  if (!this.resetOtpExpires) return false;
+  return this.resetOtpExpires > new Date();
+});
+
+userSchema.set("toJSON", { virtuals: true });
+
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;
